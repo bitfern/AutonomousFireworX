@@ -8,11 +8,8 @@ import org.bukkit.GameMode;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemBreakEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.Material;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
@@ -142,7 +139,7 @@ public class BigBrother implements org.bukkit.event.Listener {
         float power = 1F;
 
         // Delete item in case player dies from Explosion
-        // event.getBrokenItem().setAmount(0);
+        event.getBrokenItem().setAmount(0);
 
         // Create Explosion on players position
         event.getPlayer().getWorld().createExplosion(X, Y, Z, power, false, false );
@@ -157,7 +154,7 @@ public class BigBrother implements org.bukkit.event.Listener {
         event.getPlayer().setFoodLevel(20);
 
         // Give back broken diamond pickaxe
-        event.getPlayer().getEquipment().setItemInMainHand(new ItemStack(Material.DIAMOND_PICKAXE));
+        event.getPlayer().getEquipment().setItemInMainHand(new ItemStack(event.getBrokenItem()));
         event.getPlayer().getEquipment().getItemInMainHand().setDurability((short) 1611);
         System.out.println("Replaced Pickaxe");
 
@@ -166,5 +163,4 @@ public class BigBrother implements org.bukkit.event.Listener {
     }
 
     // End of Tool Explosions
-
 }
