@@ -6,72 +6,93 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+
+import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffectType;
+
+// TASK SCHEDULING
+import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 
 public class BigBrother implements org.bukkit.event.Listener {
 
+    private final AutonomousFireworks plugin;
     public String Name = "[Autonomous Fireworks]";
 
-
-    //public int onlineplayers = 0;
-
+    public BigBrother(AutonomousFireworks plugin) {
+        this.plugin = plugin;
+        this.plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
 
     // Join message
 
     @EventHandler
     public void onPlayerJoinEvent (PlayerJoinEvent event) {
 
-        event.setJoinMessage(ChatColor.AQUA + "Welcome " + event.getPlayer().getDisplayName() + " to the " + ChatColor.RED + ChatColor.BOLD + ChatColor.UNDERLINE + "BETA" + ChatColor.RESET + ChatColor.AQUA + " FireWorX server" );
+        final Player p = event.getPlayer();
+
+        event.setJoinMessage(ChatColor.AQUA + "Welcome " + p.getDisplayName() + " to the " + ChatColor.RED + ChatColor.BOLD + ChatColor.UNDERLINE + "BETA" + ChatColor.RESET + ChatColor.AQUA + " FireWorX server" );
 
         // Move to Round Start when possible !!!
 
         // EQUIP Armor
 
-        event.getPlayer().getEquipment().setHelmet(new ItemStack(Material.DIAMOND_HELMET));
-        event.getPlayer().getEquipment().setChestplate(new ItemStack(Material.DIAMOND_CHESTPLATE));
-        event.getPlayer().getEquipment().setLeggings(new ItemStack(Material.DIAMOND_LEGGINGS));
-        event.getPlayer().getEquipment().setBoots(new ItemStack(Material.DIAMOND_BOOTS));
+        p.getEquipment().setChestplate(new ItemStack(Material.DIAMOND_CHESTPLATE));
+        p.getEquipment().setLeggings(new ItemStack(Material.DIAMOND_LEGGINGS));
+        p.getEquipment().setBoots(new ItemStack(Material.DIAMOND_BOOTS));
 
         System.out.println("Armor Given to @" + event.getPlayer().getDisplayName());
 
         // Enchant armor with Protection
 
-        event.getPlayer().getEquipment().getHelmet().addUnsafeEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 10);
-        event.getPlayer().getEquipment().getChestplate().addUnsafeEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 10);
-        event.getPlayer().getEquipment().getLeggings().addUnsafeEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 10);
-        event.getPlayer().getEquipment().getBoots().addUnsafeEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 10);
+        p.getEquipment().getHelmet().addUnsafeEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 10);
+        p.getEquipment().getChestplate().addUnsafeEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 10);
+        p.getEquipment().getLeggings().addUnsafeEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 10);
+        p.getEquipment().getBoots().addUnsafeEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 10);
 
         System.out.println("Armor enchanted for @" + event.getPlayer().getDisplayName());
 
         // Fall protection
 
-        event.getPlayer().getEquipment().getBoots().addUnsafeEnchantment(Enchantment.PROTECTION_FALL, 10);
+        p.getEquipment().getBoots().addUnsafeEnchantment(Enchantment.PROTECTION_FALL, 10);
 
         System.out.println("Fall damage disabled for @" + event.getPlayer().getDisplayName());
 
         // Armor message
 
-        event.getPlayer().sendMessage(ChatColor.YELLOW + "[FireWorX][BETA] Armor Equipped");
+        p.sendMessage(ChatColor.YELLOW + "[FireWorX][BETA] Armor Equipped");
 
-        event.getPlayer().setFoodLevel(20);
-        event.getPlayer().setSaturation(20);
+        p.setFoodLevel(20);
+        p.setSaturation(20);
 
         // END of Move to Round Start when possible !!!
 
         //onlineplayers++;
 
-        event.getPlayer().sendMessage(ChatColor.YELLOW + Integer.toString(Bukkit.getServer().getOnlinePlayers().toArray().length) + ChatColor.AQUA + " Players online");
+        p.sendMessage(ChatColor.YELLOW + Integer.toString(Bukkit.getServer().getOnlinePlayers().toArray().length) + ChatColor.AQUA + " Players online");
 
         // Give Pickaxe
 
-        event.getPlayer().getEquipment().setItemInMainHand(new ItemStack(Material.DIAMOND_PICKAXE));
-        event.getPlayer().getEquipment().getItemInMainHand().setDurability((short) 1611);
+        p.getEquipment().setItemInMainHand(new ItemStack(Material.DIAMOND_PICKAXE));
+        p.getEquipment().getItemInMainHand().setDurability((short) 1611);
+
+        if (Bukkit.getServer().getOnlinePlayers().toArray().length > 4) {
+            BukkitTask gamestart = new GameStart(Bukkit.getServer().getOnlinePlayers().toArray()).runTaskLater(this.plugin, 20);
+        }
+
+        else {
+
+        }
 
     }
 
@@ -99,7 +120,6 @@ public class BigBrother implements org.bukkit.event.Listener {
             playerleft1 = " players online";
 
         }
-
         //onlineplayers--;
 
         event.setQuitMessage(ChatColor.AQUA + event.getPlayer().getDisplayName() + " just left the Server " + Integer.toString(Bukkit.getServer().getOnlinePlayers().toArray().length) + playerleft1);
@@ -123,9 +143,11 @@ public class BigBrother implements org.bukkit.event.Listener {
     //End of Death Event
 
     // Start of Tool Explosions
-
     @EventHandler
     public void onPlayerItemBreakEvent (PlayerItemBreakEvent event) {
+
+        final Player p = event.getPlayer();
+
 
         // Create Doubles to store player location
         Double X;
@@ -136,7 +158,7 @@ public class BigBrother implements org.bukkit.event.Listener {
         Y = event.getPlayer().getLocation().getY();
         Z = event.getPlayer().getLocation().getZ();
         // Explosion power
-        float power = 1F;
+        float power = 4F;
 
         // Delete item in case player dies from Explosion
         event.getBrokenItem().setAmount(0);
@@ -145,7 +167,7 @@ public class BigBrother implements org.bukkit.event.Listener {
         event.getPlayer().getWorld().createExplosion(X, Y, Z, power, false, false );
 
         // Chat Message
-        event.getPlayer().sendMessage(ChatColor.RED + "BOOM! " + ChatColor.YELLOW + "Your tool exploded" );
+        // DEBUG event.getPlayer().sendMessage(ChatColor.RED + "BOOM! " + ChatColor.YELLOW + "Your tool exploded" );
 
         // Keep Player Alive
 
@@ -154,13 +176,10 @@ public class BigBrother implements org.bukkit.event.Listener {
         event.getPlayer().setFoodLevel(20);
 
         // Give back broken diamond pickaxe
-        event.getPlayer().getEquipment().setItemInMainHand(new ItemStack(event.getBrokenItem()));
-        event.getPlayer().getEquipment().getItemInMainHand().setDurability((short) 1611);
-        System.out.println("Replaced Pickaxe");
 
-
+        BukkitTask returnitem = new ReturnItems(p).runTaskLater(this.plugin, 100);
+        // DEBUG p.sendMessage(ChatColor.RED + "DONE!");
 
     }
-
     // End of Tool Explosions
 }
